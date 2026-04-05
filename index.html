@@ -209,8 +209,71 @@ let state={
   nextId:200
 };
 
-function save(){try{localStorage.setItem("gantt_chantiers_v3",JSON.stringify(state));}catch(e){}}
-function load(){try{const d=localStorage.getItem("gantt_chantiers_v3");if(d)Object.assign(state,JSON.parse(d));}catch(e){}init();}
+let db=null;
+let saveTimer=null;
+
+function initFirebase(){
+  const cfg={
+    apiKey:"AIzaSyBe-FGXAjXfL-Z137vLi6-cCfmS1GQQE34",
+    authDomain:"planning-chantier-ttc.firebaseapp.com",
+    projectId:"planning-chantier-ttc",
+    storageBucket:"planning-chantier-ttc.firebasestorage.app",
+    messagingSenderId:"410546931339",
+    appId:"1:410546931339:web:3ae2fc2bd554ca6ef7b68e"
+  };
+  try{
+    firebase.initializeApp(cfg);
+    db=firebase.firestore();
+    showStatus("Connexion Firebase OK","green");
+  }catch(e){
+    showStatus("Erreur Firebase: "+e.message,"red");
+  }
+}
+
+function showStatus(msg,color){
+  let el=document.getElementById("fb-status");
+  if(!el){el=document.createElement("div");el.id="fb-status";el.style.cssText="position:fixed;bottom:12px;right:12px;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;transition:opacity 1s";document.body.appendChild(el);}
+  el.style.background=color==="green"?"#d5f5e3":color==="red"?"#fdf0ef":"#fef9e7";
+  el.style.color=color==="green"?"#1e6e3a":color==="red"?"#c0392b":"#7d6008";
+  el.style.opacity="1";
+  el.textContent=msg;
+  if(color==="green")setTimeout(()=>{el.style.opacity="0"},3000);
+}
+
+function save(){
+  localStorage.setItem("gantt_chantiers_v3",JSON.stringify(state));
+  if(!db)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    showStatus("Sauvegarde en cours...","orange");
+    db.collection("planning").doc("data").set(state)
+      .then(()=>showStatus("Sauvegarde OK !","green"))
+      .catch(e=>showStatus("Erreur sauvegarde: "+e.message,"red"));
+  },1500);
+}
+
+function load(){
+  const local=localStorage.getItem("gantt_chantiers_v3");
+  if(local)try{Object.assign(state,JSON.parse(local));}catch(e){}
+  if(!db){init();return;}
+  showStatus("Chargement des donnees...","orange");
+  db.collection("planning").doc("data").get()
+    .then(doc=>{
+      if(doc.exists){
+        Object.assign(state,doc.data());
+        localStorage.setItem("gantt_chantiers_v3",JSON.stringify(state));
+        showStatus("Donnees chargees !","green");
+      }else{
+        if(local)save();
+        showStatus("Nouvelle base de donnees creee","green");
+      }
+      init();
+    })
+    .catch(e=>{
+      showStatus("Erreur chargement: "+e.message,"red");
+      init();
+    });
+}
 
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",function(){
   const id=this.dataset.tab;
@@ -677,6 +740,12 @@ function init(){
   onYearChange();renderEq();renderCg();renderCh();renderStats();
 }
 
+load();
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+initFirebase();
 load();
 </script>
 </body>
