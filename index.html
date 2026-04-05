@@ -55,7 +55,14 @@ input:focus,select:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B620}
 
 <div class="app-header">
   <h1>Planning Chantiers — Diagramme de Gantt</h1>
-  <span id="hdr-year">2025</span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="hdr-year" style="opacity:.7;font-size:11px">2025</span>
+    <button onclick="exportData()" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;cursor:pointer">Sauvegarder donnees</button>
+    <label style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;cursor:pointer">
+      Restaurer donnees
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </label>
+  </div>
 </div>
 
 <div class="tabs" id="tabs-bar">
@@ -628,6 +635,30 @@ function countConflicts(){
   return n;
 }
 
+function exportData(){
+  const json=JSON.stringify(state,null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="planning_chantiers_sauvegarde_"+state.year+".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.chantiers||!data.equipes){alert("Fichier invalide — ce n'est pas une sauvegarde de planning.");return;}
+      Object.assign(state,data);
+      save();init();
+      alert("Donnees restaurees avec succes ! "+data.chantiers.length+" chantiers charges.");
+      document.getElementById("import-file").value="";
+    }catch(err){alert("Erreur lors de la lecture du fichier : "+err.message);}
+  };
+  reader.readAsText(file);
+}
 function exportPDF(){
   const mode=ganttMode;
   if(ganttMode!=="full"){ganttMode="full";renderGantt();}
