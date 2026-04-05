@@ -55,14 +55,7 @@ input:focus,select:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B620}
 
 <div class="app-header">
   <h1>Planning Chantiers — Diagramme de Gantt</h1>
-  <div style="display:flex;gap:8px;align-items:center">
-    <span id="hdr-year" style="opacity:.7;font-size:11px">2025</span>
-    <button onclick="exportData()" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;cursor:pointer">Sauvegarder donnees</button>
-    <label style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;cursor:pointer">
-      Restaurer donnees
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-    </label>
-  </div>
+  <span id="hdr-year" style="opacity:.7;font-size:11px">2025</span>
 </div>
 
 <div class="tabs" id="tabs-bar">
@@ -76,6 +69,16 @@ input:focus,select:focus{border-color:#2E75B6;box-shadow:0 0 0 2px #2E75B620}
 
 <!-- PARAMETRES -->
 <div id="p-cfg" class="panel active">
+  <div class="sec">Sauvegarde & restauration</div>
+  <div class="row">
+    <button class="btn green" onclick="exportData()">Sauvegarder mes donnees (.json)</button>
+    <label class="btn" style="cursor:pointer">
+      Restaurer mes donnees (.json)
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </label>
+    <span style="font-size:11px;color:#888">Sauvegardez regulierement pour ne pas perdre vos donnees !</span>
+  </div>
+  <div class="section-sep"></div>
   <div class="sec">Annee &amp; periode</div>
   <div class="row">
     <span class="lbl">Annee</span>
