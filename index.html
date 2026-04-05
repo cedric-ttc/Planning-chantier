@@ -488,8 +488,20 @@ function renderGantt(){
       const isCg=congesSet.has(ds);
       const isToday=ds===todayStr;
       const inRange=chStart&&chEnd&&ds>=chStart&&ds<=chEnd;
-      let bg=isToday?"rgba(226,75,74,0.12)":isCg?"#d5f5e3":isWE?"#f0f2f5":inRange?"#dde8f4":"#fff";
-      h+=`<td class="day-td" style="background:${bg};${isToday?"border-left:2px solid #E24B4A;border-right:2px solid #E24B4A":""}"></td>`;
+      // Trouve l'etape active ce jour pour afficher sa couleur
+      const etapeActive=ch.etapes.find(et=>ds>=et.debut&&ds<=et.fin);
+      const eq=etapeActive?state.equipes.find(e=>e.id===etapeActive.equipeId):null;
+      const eqCol=eq?eq.couleur:null;
+      let bg;
+      if(isToday) bg="rgba(226,75,74,0.18)";
+      else if(isCg&&inRange) bg="#d5f5e3";
+      else if(etapeActive&&eqCol&&!isWE) bg=eqCol;
+      else if(etapeActive&&eqCol&&isWE) bg=hexAlpha(eqCol,0.25);
+      else if(inRange&&isWE) bg="#dde3ec";
+      else if(inRange) bg="#c8d8ee";
+      else if(isWE) bg="#f0f2f5";
+      else bg="#fff";
+      h+=`<td class="day-td" style="background:${bg};height:28px;${isToday?"border-left:2px solid #E24B4A;border-right:2px solid #E24B4A":""}"></td>`;
       d.setDate(d.getDate()+1);
     }
     h+=`</tr>`;
